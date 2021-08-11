@@ -1,45 +1,48 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-import os
-from flask import Flask, request, jsonify, url_for
-from flask_migrate import Migrate
-from flask_swagger import swagger
-from flask_cors import CORS
-from utils import APIException, generate_sitemap
-from admin import setup_admin
-from models import db, User
+from flask import Flask, request, jsonify
+from models import db, Task
 #from models import Person
 
 app = Flask(__name__)
-app.url_map.strict_slashes = False
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://flask4p1:123321...@85.10.205.173:3306/flaskapi" #Conexión con la DB (base de datos)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-MIGRATE = Migrate(app, db)
 db.init_app(app)
-CORS(app)
-setup_admin(app)
-
-# Handle/serialize errors like a JSON object
-@app.errorhandler(APIException)
-def handle_invalid_usage(error):
-    return jsonify(error.to_dict()), error.status_code
 
 # generate sitemap with all your endpoints
-@app.route('/')
-def sitemap():
-    return generate_sitemap(app)
+@app.route('/') #Decorador 
+def home():
+    return jsonify({"mensaje": "Bienvenidos a mi APP :D"})
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
+@app.route('/tareas', methods=['PUT' ]) #Decorador 
+def actualizar_tareas():
+    return jsonify({"mensaje_via_put": "Mensaje via PUT"})
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
 
-    return jsonify(response_body), 200
+@app.route('/tareas<id>', methods=['GET' ]) #Decorador 
+def obtener_detalle_tareas(id):
+    return jsonify({"mensaje_via_get": "Mensaje via GET"})
+
+@app.route('/tareas', methods=['GET']) #Decorador 
+def obtener_tareas():
+    tasks = Task.query.all()
+    return jsonify({"mensaje_via_get": "Mensaje via GET"})
+
+        
+@app.route('/tareas', methods=['POST']) #Decorador 
+def obtener_tareas1():
+    return jsonify({"mensaje_via_get": "Mensaje via Post"})
+
+#@app.route('/tareas', methods=['PUT']) #Decorador 
+#def obtener_tareas2():
+#    return jsonify({"mensaje_via_get": "Mensaje via Put"})
+
+@app.route('/tareas', methods=['DELETE']) #Decorador 
+def obtener_tareas3():
+    return jsonify({"mensaje_via_get": "Mensaje via Delete"})
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
-    PORT = int(os.environ.get('PORT', 3000))
-    app.run(host='0.0.0.0', port=PORT, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
